@@ -1,5 +1,7 @@
 package org.adaschool.retrofit;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import com.bumptech.glide.Glide;
@@ -20,13 +22,15 @@ public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
 
+    private SharedPreferences sharedPreferences;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
-        DogApiService dogApiService = RetrofitInstance.getRetrofitInstance().create(DogApiService.class);
+        sharedPreferences = getSharedPreferences("org.adaschool.retrofit", MODE_PRIVATE);
+        DogApiService dogApiService = RetrofitInstance.getRetrofitInstance(sharedPreferences).create(DogApiService.class);
 
 //        Call<BreedsListDto> call = dogApiService.getAllBreeds();
 //        call.enqueue(new Callback<BreedsListDto>() {
@@ -56,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
     private void loadDogInfo() {
         MainActivity view = this;
         String breed = "african";
-        DogApiService dogApiService = RetrofitInstance.getRetrofitInstance().create(DogApiService.class);
+        DogApiService dogApiService = RetrofitInstance.getRetrofitInstance(sharedPreferences).create(DogApiService.class);
         Call<BreedsListDto> call = dogApiService.getAllImages(breed);
         call.enqueue(new Callback<BreedsListDto>() {
 
@@ -79,6 +83,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<BreedsListDto> call, Throwable t) {
                 Log.e(TAG, "Error al llamar a la API", t);
+            }
+
+            private void logout(){
+                sharedPreferences.edit().remove("token").apply();
+            }
+
+            private void saveToken(){
+                sharedPreferences.edit().putString("token", "token").apply();
             }
         });
 //
